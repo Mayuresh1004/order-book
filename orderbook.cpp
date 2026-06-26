@@ -52,7 +52,7 @@ struct BuyComparator
 
 // Comparator for SELL side — lowest price first
 struct SellComparator {
-    bool operator()(Order a, Order b) const {
+    bool operator()(const Order& a, const Order& b) const {
         if(a.price != b.price)
             return a.price > b.price; // min heap by price
         return a.timestamp > b.timestamp;
@@ -69,6 +69,7 @@ public:
     void addOrder(Order o) {
         o.timestamp = ++currentTimestamp;
         orderMap[o.orderId] = o;
+        
         if (o.side == OrderSide::BUY) buySide.push(o);
         else sellSide.push(o);
         cout << "Order added: " << o.orderId << endl;
@@ -142,6 +143,7 @@ void modifyOrder(int orderId, double newPrice, int newQty) {
     Order updated = orderMap[orderId]; // get existing
     updated.price = newPrice;
     updated.quantity = newQty;
+    updated.timestamp = ++currentTimestamp;
     
     orderMap.erase(orderId);  // remove old
     orderMap[orderId] = updated;  // add updated
@@ -150,6 +152,8 @@ void modifyOrder(int orderId, double newPrice, int newQty) {
     else sellSide.push(updated);
     
     cout << "Order " << orderId << " modified" << endl;
+
+    matchOrders(); // Attempt to match after modification
 }
 
     void matchOrders() {
